@@ -30,4 +30,3 @@ export async function postRemoveBackground(payload: RemoveBgRequest): Promise<Re
   if (!res.ok) throw new Error(await res.text());
   return (await res.json()) as RemoveBgResponse;
 }
-

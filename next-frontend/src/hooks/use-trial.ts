@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 const KEY = "bgremover_trial_uses";
-const LIMIT = 5;
+const LIMIT = 4;
 
 export function useTrial() {
   const [uses, setUses] = useState<number>(0);

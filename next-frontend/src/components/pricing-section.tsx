@@ -1,3 +1,5 @@
+"use client";
+
 import { motion } from "framer-motion";
 import { SquishyCard } from "@/components/squishy-card";
 
@@ -6,7 +8,7 @@ const plans = [
     name: "Free",
     price: "$0",
     description: "Great to try the tool",
-    features: ["5 images/day", "PNG output", "Standard model"],
+    features: ["4 images/day", "PNG output", "Standard model"],
     cta: "Get started",
     popular: false,
   },
@@ -83,5 +85,3 @@ export function PricingSection() {
     </section>
   );
 }
-
-

@@ -8,9 +8,25 @@ import { useEffect, useState } from "react";
 export function ThemeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
 
-  const isDark = (mounted ? resolvedTheme : theme) === "dark";
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <button
+        aria-label="Toggle theme"
+        className="relative inline-flex h-10 w-10 items-center justify-center rounded-full glass soft-shadow transition-transform hover:scale-105"
+      >
+        <span className="text-[--foreground]">
+          <Sun size={18} />
+        </span>
+      </button>
+    );
+  }
+
+  const isDark = resolvedTheme === "dark";
 
   return (
     <button
@@ -33,6 +49,3 @@ export function ThemeToggle() {
     </button>
   );
 }
-
-
-
