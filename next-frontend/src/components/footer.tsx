@@ -1,55 +1,47 @@
+import { Github, Linkedin, Mail } from "lucide-react";
+
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-white/10 bg-[color-mix(in_oklab,var(--surface)_85%,transparent)]">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-1">
-            <div className="inline-flex items-center gap-2">
-              <span className="inline-block h-6 w-6 rounded-md" style={{ background: "linear-gradient(135deg, var(--primary), var(--secondary))" }} />
-              <span className="font-bold text-lg">BG Remover</span>
-            </div>
-            <p className="mt-4 max-w-xs text-sm opacity-70">
-              AI-powered background removal tool for professionals and creators.
-            </p>
-          </div>
-          
-          <div className="lg:col-span-1">
-            <h3 className="text-sm font-semibold uppercase tracking-wider opacity-80">Product</h3>
-            <ul className="mt-4 space-y-2">
-              <li><a href="#features" className="text-sm opacity-70 hover:opacity-100 transition">Features</a></li>
-              <li><a href="#pricing" className="text-sm opacity-70 hover:opacity-100 transition">Pricing</a></li>
-              <li><a href="#tool" className="text-sm opacity-70 hover:opacity-100 transition">Try It Free</a></li>
-            </ul>
-          </div>
-          
-          <div className="lg:col-span-1">
-            <h3 className="text-sm font-semibold uppercase tracking-wider opacity-80">Company</h3>
-            <ul className="mt-4 space-y-2">
-              <li><a href="#about" className="text-sm opacity-70 hover:opacity-100 transition">About</a></li>
-              <li><a href="#contact" className="text-sm opacity-70 hover:opacity-100 transition">Contact</a></li>
-              <li><a href="#" className="text-sm opacity-70 hover:opacity-100 transition">Privacy</a></li>
-              <li><a href="#" className="text-sm opacity-70 hover:opacity-100 transition">Terms</a></li>
-            </ul>
-          </div>
-          
-          <div className="lg:col-span-1">
-            <h3 className="text-sm font-semibold uppercase tracking-wider opacity-80">Connect</h3>
-            <ul className="mt-4 space-y-2">
-              <li><a href="#" className="text-sm opacity-70 hover:opacity-100 transition">Twitter</a></li>
-              <li><a href="#" className="text-sm opacity-70 hover:opacity-100 transition">Facebook</a></li>
-              <li><a href="#" className="text-sm opacity-70 hover:opacity-100 transition">LinkedIn</a></li>
-              <li><a href="#" className="text-sm opacity-70 hover:opacity-100 transition">Instagram</a></li>
-            </ul>
-          </div>
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 text-center">
+
+        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-6">
+          Ready to remove backgrounds?
+        </h2>
+
+        <div className="flex justify-center gap-6 mb-8">
+          <a
+            href="https://github.com/yashnaiduu"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full bg-white/5 p-3 hover:bg-white/10 transition-colors"
+            aria-label="GitHub"
+          >
+            <Github className="h-6 w-6" />
+          </a>
+          <a
+            href="https://www.linkedin.com/in/yash-naidu-b08055219"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full bg-white/5 p-3 hover:bg-white/10 transition-colors"
+            aria-label="LinkedIn"
+          >
+            <Linkedin className="h-6 w-6" />
+          </a>
+          <a
+            href="mailto:yashnnaidu@gmail.com"
+            className="rounded-full bg-white/5 p-3 hover:bg-white/10 transition-colors"
+            aria-label="Email"
+          >
+            <Mail className="h-6 w-6" />
+          </a>
         </div>
-        
-        <div className="mt-12 pt-8 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-sm opacity-70">© {new Date().getFullYear()} Background Remover. All rights reserved.</p>
-          <div className="flex gap-6">
-            <a href="#" className="text-sm opacity-70 hover:opacity-100 transition">Privacy Policy</a>
-            <a href="#" className="text-sm opacity-70 hover:opacity-100 transition">Terms of Service</a>
-          </div>
+
+        <div className="text-sm opacity-60">
+          <p>Made with ❤️ by <span className="font-semibold text-primary">Yash Naidu</span></p>
+          <p className="mt-2 text-xs">© {new Date().getFullYear()} Background Remover Pro</p>
         </div>
+
       </div>
     </footer>
   );

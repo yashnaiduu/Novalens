@@ -11,8 +11,6 @@ import {
   ShieldCheck
 } from "lucide-react";
 import { UploadTool } from "@/components/upload-tool";
-import { AboutSection } from "@/components/about-section";
-import { ContactSection } from "@/components/contact-section";
 
 const features = [
   {
@@ -174,8 +172,7 @@ export default function HomePage() {
         <UploadTool />
       </section>
 
-      <AboutSection />
-      <ContactSection />
+
     </main>
   );
 }
