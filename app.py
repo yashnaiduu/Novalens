@@ -164,7 +164,12 @@ def remove_background():
         return jsonify(result)
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        traceback.print_exc()
+        error_msg = str(e)
+        if not error_msg:
+            error_msg = f"Unknown error: {type(e).__name__}"
+        return jsonify({'error': error_msg}), 500
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
