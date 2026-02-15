@@ -1,165 +1,3 @@
-<<<<<<< HEAD
-# Novalens - AI Background Remover
-
-A free, fast, and powerful AI-powered background removal tool built with Next.js and Flask.
-
-## ✨ Features
-
-- 🎯 **Instant Background Removal** - AI-powered background removal in seconds
-- 🎨 **Multiple Export Formats** - Download as PNG, JPG, or WEBP
-- 🚀 **100% Free** - No sign-up, no limits, completely free to use
-- 🎭 **Clean UI** - Minimalist, modern interface with dark mode support
-- 📱 **Responsive Design** - Works perfectly on desktop and mobile
-
-## 🎥 Demo
-
-![Novalens Demo - AI-powered background removal in action](demo.gif)
-
-*Watch the app in action: upload images, remove backgrounds instantly, and download in your preferred format*
-
-## 🏗️ Project Architecture
-
-```mermaid
-graph TB
-    subgraph "Frontend - Next.js"
-        A[User Interface] --> B[Upload Component]
-        B --> C[API Client]
-        C --> D[Image Preview]
-        D --> E[Format Selector]
-        E --> F[Download Handler]
-    end
-    
-    subgraph "Backend - Flask"
-        G[API Endpoint] --> H{Background Removal Engine}
-        H --> I[Rembg AI Model]
-        H --> J[Image Processing]
-        J --> K[Format Conversion]
-        K --> L[Base64 Encoding]
-    end
-    
-    C -->|POST /api/remove_background| G
-    L -->|JSON Response| C
-    
-    style A fill:#18181b,stroke:#fff,color:#fff
-    style G fill:#18181b,stroke:#fff,color:#fff
-    style I fill:#3b82f6,stroke:#fff,color:#fff
-```
-
-### Tech Stack
-
-**Frontend:**
-- Next.js 15 (React 19)
-- TypeScript
-- Tailwind CSS
-- Framer Motion
-- Lucide Icons
-
-**Backend:**
-- Flask (Python)
-- Rembg (AI Background Removal)
-- Pillow (Image Processing)
-- ONNX Runtime
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js 18+ and npm
-- Python 3.11+
-- pip
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yashnaiduu/background-remover-pro.git
-   cd background-remover-pro
-   ```
-
-2. **Install Frontend Dependencies**
-   ```bash
-   cd next-frontend
-   npm install
-   ```
-
-3. **Install Backend Dependencies**
-   ```bash
-   cd ..
-   pip3 install flask flask-cors flask-sqlalchemy flask-mail python-dotenv pillow PyJWT
-   pip3 install "rembg[cpu]"
-   ```
-
-### Running Locally
-
-1. **Start the Backend Server** (Terminal 1)
-   ```bash
-   python3 app.py
-   ```
-   Backend will run on `http://localhost:8000`
-
-2. **Start the Frontend Server** (Terminal 2)
-   ```bash
-   cd next-frontend
-   npm run dev
-   ```
-   Frontend will run on `http://localhost:3000`
-
-3. **Open your browser** and navigate to `http://localhost:3000`
-
-## 📁 Project Structure
-
-```
-background-remover-pro/
-├── next-frontend/          # Next.js frontend application
-│   ├── src/
-│   │   ├── app/           # App router pages
-│   │   ├── components/    # React components
-│   │   ├── lib/          # API client & utilities
-│   │   └── providers/    # Context providers
-│   └── public/           # Static assets
-├── app.py                # Flask backend server
-├── models.py            # Database models
-└── README.md            # This file
-```
-
-## 🎨 Usage
-
-1. **Upload an Image** - Click or drag & drop an image (PNG, JPG, WEBP)
-2. **Wait for Processing** - AI removes the background automatically
-3. **Choose Format** - Select PNG, JPG, or WEBP
-4. **Download** - Get your processed image instantly
-
-## 🛠️ Configuration
-
-### Backend Port
-Edit `app.py` line 375:
-```python
-port = int(os.environ.get('PORT', 8000))  # Change 8000 to your preferred port
-```
-
-### Frontend API URL
-Create `next-frontend/.env.local`:
-```env
-NEXT_PUBLIC_API_BASE=http://localhost:8000
-```
-
-## 📝 License
-
-MIT License - feel free to use this project for personal or commercial purposes.
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests.
-
-## 👨‍💻 Author
-
-**Yash Naidu**
-- GitHub: [@yashnaiduu](https://github.com/yashnaiduu)
-
----
-
-Made with ❤️ using Next.js and Flask
-=======
 ---
 title: Novalens Backend
 emoji: 🔥
@@ -168,7 +6,98 @@ colorTo: indigo
 sdk: docker
 pinned: false
 license: mit
+app_port: 7860
 ---
 
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
->>>>>>> hf/main
+<div align="center">
+
+# Novalens - AI Background Remover
+
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)
+![Flask](https://img.shields.io/badge/Flask-3.0-000?logo=flask)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+**A professional, AI-powered tool to remove image backgrounds in seconds.**
+Built with **Next.js 15** (Frontend) and **Flask** (Backend) running on **Hugging Face Spaces**.
+
+[🎥 Live Demo](https://yashnaiduu-novalens-backend.hf.space) · [🐛 Report Bug](https://github.com/yashnaiduu/Novalens/issues) · [✨ Request Feature](https://github.com/yashnaiduu/Novalens/issues)
+
+</div>
+
+---
+
+## ✨ Features
+
+- **🎯 Instant AI Removal**: Powered by `u2netp` (lightweight & fast) and `rembg`.
+- **🎨 Smart Editor**: Drag & drop interface with Before/After comparison.
+- **⚡ Super Fast**: Optimized with global session caching for <1s processing.
+- **🔒 Secure & Private**: Images are processed in memory and never stored.
+- **📱 Responsive UI**: Beautiful dark/light mode interface built with Tailwind CSS.
+
+## 🏗️ Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend (Next.js)"
+        UI[User Interface] -->|Upload| API_Client
+        API_Client -->|POST /api| Backend
+    end
+    
+    subgraph "Backend (Flask @ HF Spaces)"
+        Backend -->|Process| Model[U2NetP AI Model]
+        Model -->|Remove BG| Processor[Image Processor]
+        Processor -->|Base64| Response
+    end
+    
+    Response -->|JSON| API_Client
+    API_Client -->|Preview| UI
+```
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- Python 3.11+
+
+### Installation
+
+1.  **Clone the repo**
+    ```bash
+    git clone https://github.com/yashnaiduu/Novalens.git
+    cd Novalens
+    ```
+
+2.  **Backend Setup**
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -r requirements.txt
+    python3 app.py
+    ```
+
+3.  **Frontend Setup**
+    ```bash
+    cd next-frontend
+    npm install
+    npm run dev
+    ```
+
+4.  **Open App**
+    Visit `http://localhost:3000`.
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+Made with ❤️ by Yash Naidu
+</div>
