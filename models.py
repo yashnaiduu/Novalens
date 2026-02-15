@@ -1,3 +1,8 @@
+"""
+models.py
+Database schemas for Users, Payments, and Usage.
+"""
+
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import secrets

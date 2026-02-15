@@ -24,19 +24,20 @@ import secrets
 
 from models import db, User, Payment, UsageRecord
 
+# Init app
 app = Flask(__name__, static_folder='public', static_url_path='')
 
-# Enable CORS for frontend
+# CORS setup
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# Configuration
+# Config
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(16))
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///background_remover.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', secrets.token_hex(32))
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 
-# Email configuration
+# Mail settings
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
 app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
 app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
@@ -44,7 +45,7 @@ app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER')
 
-# Initialize extensions
+# Extensions
 db.init_app(app)
 mail = Mail(app)
 
@@ -103,19 +104,18 @@ def remove_background():
         am_erode = int(data.get('alpha_matting_erode_structure_size', 10))
         am_base = int(data.get('alpha_matting_base_size', 1000))
         
-        # Decode the base64 string
+        # Decode image
         try:
             image_bytes = base64.b64decode(image_data.split(',')[1])
             input_image = Image.open(io.BytesIO(image_bytes))
         except Exception:
              return jsonify({'error': 'Invalid image data'}), 400
         
-        # Time to do the magic - remove that bg!
+        # Process image
         output_image: Image.Image
-        if True: # Rembg is usually better, so stick with it
+        if True: # Default to rembg
             try:
-                # Alpha matting helps with hair/fur details
-                # Use global session if available and model is u2netp
+                # Use global session if possible
                 session = GLOBAL_SESSION if model_name == 'u2netp' else new_session(model_name)
                 
                 output_image = rembg_remove(
@@ -127,7 +127,7 @@ def remove_background():
                     alpha_matting_erode_size=am_erode
                 )
             except Exception as e:
-                print(f"rembg crashed: {e}, attempting backup option")
+                print(f"rembg failed: {e}, trying fallback")
                 if HAS_BGREMOVER:
                      result_bytes = br_remove(
                         image_bytes,
@@ -142,9 +142,9 @@ def remove_background():
                 else:
                     raise e
         
-        # Export it as whatever the user asked for
+        # Handle format
         if output_format == 'JPG' or output_format == 'JPEG':
-            # JPG needs a white background since it hates transparency
+            # JPG no like transparency
             white_background = Image.new('RGB', output_image.size, (255, 255, 255))
             white_background.paste(output_image, mask=output_image.split()[-1] if output_image.mode == 'RGBA' else None)
             output_image = white_background
