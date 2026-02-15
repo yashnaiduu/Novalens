@@ -1,3 +1,10 @@
+"""
+models.py
+---------
+Database models for the Novalens application.
+Defines User, Payment, and UsageRecord schemas for SQLAlchemy.
+"""
+
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import secrets
