@@ -1,9 +1,3 @@
----
-sdk: docker
-app_port: 7860
-license: mit
----
-
 # Novalens - AI Background Remover
 
 A free, fast, and powerful AI-powered background removal tool built with Next.js and Flask.
