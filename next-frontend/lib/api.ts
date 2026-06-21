@@ -40,7 +40,7 @@ export async function postRemoveBackground(payload: RemoveBgRequest): Promise<Re
       try {
         const errorData = await res.json();
         throw new Error(errorData.error || "Server error occurred");
-      } catch (_e) {
+      } catch {
         throw new Error(await res.text() || "Server error occurred");
       }
     }
