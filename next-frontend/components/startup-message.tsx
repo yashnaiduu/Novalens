@@ -10,27 +10,33 @@ export function StartupMessage() {
 
   useEffect(() => {
     setMounted(true);
-    // Check if we've already shown this in the current session
-    const hasSeenMessage = sessionStorage.getItem("hasSeenStartupMessage");
-    
-    if (!hasSeenMessage) {
-      // Show the message
-      setIsVisible(true);
-      sessionStorage.setItem("hasSeenStartupMessage", "true");
-    }
 
-    // Ping the backend to wake it up
-    // We don't care about the response, just hitting an endpoint wakes up HuggingFace Spaces/Render backend
+    // Ping the backend to wake it up immediately
     fetch(`${API_BASE}/api/auth/profile`, { 
         method: "GET",
-        headers: {
-            "Content-Type": "application/json"
-        }
-    }).catch(err => {
-        // Silently ignore errors since we are just trying to wake it up
+        headers: { "Content-Type": "application/json" }
+    }).catch(() => {
         console.log("Wake up ping sent");
     });
 
+    // Show popup only after page is fully loaded (not during init)
+    const hasSeenMessage = sessionStorage.getItem("hasSeenStartupMessage");
+    if (!hasSeenMessage) {
+      const showTimer = setTimeout(() => {
+        setIsVisible(true);
+        sessionStorage.setItem("hasSeenStartupMessage", "true");
+      }, 1000);
+
+      // Auto-dismiss after 6 seconds
+      const dismissTimer = setTimeout(() => {
+        setIsVisible(false);
+      }, 7000); // 1s delay + 6s visible
+
+      return () => {
+        clearTimeout(showTimer);
+        clearTimeout(dismissTimer);
+      };
+    }
   }, []);
 
   if (!mounted || !isVisible) return null;
