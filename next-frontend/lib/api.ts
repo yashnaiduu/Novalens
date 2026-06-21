@@ -40,14 +40,14 @@ export async function postRemoveBackground(payload: RemoveBgRequest): Promise<Re
       try {
         const errorData = await res.json();
         throw new Error(errorData.error || "Server error occurred");
-      } catch (e) {
+      } catch (_e) {
         throw new Error(await res.text() || "Server error occurred");
       }
     }
     
     return (await res.json()) as RemoveBgResponse;
-  } catch (error: any) {
-    if (error.name === 'AbortError') {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new Error("Request timed out. The backend might be busy or restarting.");
     }
     throw error;
