@@ -32,5 +32,5 @@ ENV PORT=7860
 ENV BIND_ADDRESS=0.0.0.0
 
 # Run app.py when the container launches
-# Using gunicorn for production stability
-CMD ["gunicorn", "-b", "0.0.0.0:7860", "app:app", "--timeout", "120", "--workers", "1"]
+# Using gunicorn for production stability with threads for better concurrency
+CMD ["gunicorn", "-b", "0.0.0.0:7860", "app:app", "--timeout", "120", "--workers", "2", "--threads", "4", "--worker-class", "gthread"]

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { StartupMessage } from "@/components/startup-message";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,7 +18,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Novalens - AI Background Remover",
-  description: "Remove image backgrounds instantly with AI. Free, fast, and pixel-perfect.",
+  description: "Novalens — Remove image backgrounds instantly with AI. Free, fast, and pixel-perfect.",
   icons: {
     icon: '/favicon.svg',
   },
@@ -30,11 +31,12 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[--background] text-[--foreground] min-h-screen flex flex-col`}>
+      <body suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[--background] text-[--foreground] min-h-screen flex flex-col`}>
         <ThemeProvider>
           <Navbar />
           {children}
           <Footer />
+          <StartupMessage />
         </ThemeProvider>
       </body>
     </html>

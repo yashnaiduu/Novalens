@@ -22,11 +22,36 @@ export interface RemoveBgResponse {
 }
 
 export async function postRemoveBackground(payload: RemoveBgRequest): Promise<RemoveBgResponse> {
-  const res = await fetch(`${API_BASE}/api/remove_background`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) throw new Error(await res.text());
-  return (await res.json()) as RemoveBgResponse;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
+  try {
+    const res = await fetch(`${API_BASE}/api/remove_background`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+    
+    if (!res.ok) {
+      if (res.status === 413) {
+        throw new Error("File is too large. Please upload an image under 15MB.");
+      }
+      try {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Server error occurred");
+      } catch (e) {
+        throw new Error(await res.text() || "Server error occurred");
+      }
+    }
+    
+    return (await res.json()) as RemoveBgResponse;
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      throw new Error("Request timed out. The backend might be busy or restarting.");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }

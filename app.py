@@ -21,20 +21,34 @@ import base64
 import io
 from datetime import datetime, timedelta
 import secrets
+import stripe
 
 from models import db, User, Payment, UsageRecord
 
 app = Flask(__name__, static_folder='public', static_url_path='')
 
-# Enable CORS for frontend
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+# Enable CORS for frontend securely
+frontend_url = os.environ.get('FRONTEND_URL', '*')
+CORS(app, resources={r"/api/*": {"origins": frontend_url}})
 
 # Configuration
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(16))
+env_secret_key = os.environ.get('SECRET_KEY')
+env_jwt_secret = os.environ.get('JWT_SECRET_KEY')
+
+if os.environ.get('FLASK_ENV') == 'production':
+    if not env_secret_key or not env_jwt_secret:
+        raise ValueError("SECRET_KEY and JWT_SECRET_KEY must be set in production environment variables")
+
+app.config['SECRET_KEY'] = env_secret_key or secrets.token_hex(16)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///background_remover.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY', secrets.token_hex(32))
+app.config['JWT_SECRET_KEY'] = env_jwt_secret or secrets.token_hex(32)
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
+app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024  # 15MB max file upload size
+
+# Stripe configuration
+stripe.api_key = os.environ.get('STRIPE_SECRET_KEY')
+app.config['STRIPE_WEBHOOK_SECRET'] = os.environ.get('STRIPE_WEBHOOK_SECRET')
 
 # Email configuration
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
@@ -175,36 +189,31 @@ def remove_background():
     except Exception as e:
         import traceback
         traceback.print_exc()
-        error_msg = str(e)
-        if not error_msg:
-            error_msg = f"Unknown error: {type(e).__name__}"
-        return jsonify({'error': error_msg}), 500
+        # Return a generic error to the client instead of leaking internal state
+        return jsonify({'error': 'An internal error occurred while processing the image. Please try again later.'}), 500
 
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     try:
         data = request.get_json()
         email = data.get('email')
+        password = data.get('password')
         name = data.get('name')
         
-        if not email:
-            return jsonify({'error': 'Email is required'}), 400
+        if not email or not password:
+            return jsonify({'error': 'Email and password are required'}), 400
+            
+        if len(password) < 6:
+            return jsonify({'error': 'Password must be at least 6 characters'}), 400
         
         user = User.query.filter_by(email=email).first()
         if user:
-            token = jwt.encode({
-                'user_id': user.id,
-                'exp': datetime.utcnow() + app.config['JWT_ACCESS_TOKEN_EXPIRES']
-            }, app.config['JWT_SECRET_KEY'], algorithm='HS256')
-            
-            return jsonify({
-                'user': user.to_dict(),
-                'token': token
-            }), 200
+            return jsonify({'error': 'User already exists'}), 409
         
         user = User()
         user.email = email
         user.name = name
+        user.set_password(password)
         db.session.add(user)
         db.session.commit()
         
@@ -217,9 +226,9 @@ def register():
         try:
             if app.config['MAIL_USERNAME']:
                 msg = Message(
-                    subject='Welcome to Background Remover!',
+                    subject='Welcome to Novalens!',
                     recipients=[email],
-                    body=f'Hi {name or "there"},\n\nWelcome to Background Remover! You can now start removing backgrounds from your images.\n\nYou have 4 free trials remaining.\n\nBest regards,\nThe Background Remover Team'
+                    body=f'Hi {name or "there"},\n\nWelcome to Novalens! You can now start removing backgrounds from your images.\n\nYou have 4 free trials remaining.\n\nBest regards,\nThe Novalens Team'
                 )
                 mail.send(msg)
         except Exception as e:
@@ -230,20 +239,23 @@ def register():
             'token': token
         }), 201
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': 'Registration failed due to an internal error'}), 500
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
         email = data.get('email')
+        password = data.get('password')
         
-        if not email:
-            return jsonify({'error': 'Email is required'}), 400
+        if not email or not password:
+            return jsonify({'error': 'Email and password are required'}), 400
         
         user = User.query.filter_by(email=email).first()
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
+        if not user or not user.check_password(password):
+            return jsonify({'error': 'Invalid credentials'}), 401
         
         token = jwt.encode({
             'user_id': user.id,
@@ -255,7 +267,7 @@ def login():
             'token': token
         })
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Login failed due to an internal error'}), 500
 
 @app.route('/api/auth/profile', methods=['GET'])
 @token_required
@@ -293,9 +305,29 @@ def get_all_users(current_user):
 @token_required
 def create_checkout_session(current_user):
     try:
+        frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': 'Novalens Premium',
+                        'description': 'Unlimited background removals',
+                    },
+                    'unit_amount': 3000,
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=f"{frontend_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{frontend_url}/payment-cancelled",
+            client_reference_id=str(current_user.id)
+        )
+        
         payment = Payment()
         payment.user_id = current_user.id
-        payment.stripe_payment_id = f"bmc_{secrets.token_hex(16)}"
+        payment.stripe_payment_id = session.id
         payment.amount = 3000  # $30 in cents
         payment.currency = 'usd'
         payment.status = 'pending'
@@ -303,49 +335,55 @@ def create_checkout_session(current_user):
         db.session.add(payment)
         db.session.commit()
         
-        return jsonify({'id': payment.id, 'payment_id': payment.stripe_payment_id})
+        return jsonify({'id': session.id, 'url': session.url})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'Failed to create checkout session'}), 500
 
 @app.route('/api/webhook', methods=['POST'])
 def payment_webhook():
+    payload = request.get_data(as_text=True)
+    sig_header = request.headers.get('Stripe-Signature')
+    webhook_secret = app.config.get('STRIPE_WEBHOOK_SECRET')
+
     try:
-        data = request.get_json()
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, webhook_secret
+        )
+    except ValueError as e:
+        return jsonify({'error': 'Invalid payload'}), 400
+    except stripe.error.SignatureVerificationError as e:
+        return jsonify({'error': 'Invalid signature'}), 400
+    except Exception as e:
+        return jsonify({'error': 'Webhook processing failed'}), 400
+
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
         
-        payment_id = data.get('payment_id') or data.get('external_id') or data.get('id')
-        amount = data.get('amount', 0)
-        currency = data.get('currency', 'USD')
-        status = data.get('status', 'pending')
+        client_reference_id = session.get('client_reference_id')
+        payment_id = session.get('id')
+        amount = session.get('amount_total')
+        currency = session.get('currency')
         
-        payment = None
-        if payment_id:
-            payment = Payment.query.filter_by(stripe_payment_id=payment_id).first()
-            if not payment:
-                try:
-                    payment_id_int = int(payment_id.split('_')[-1]) if '_' in str(payment_id) else int(payment_id)
-                    payment = Payment.query.get(payment_id_int)
-                except (ValueError, TypeError):
-                    pass
-        
-        if not payment:
-            return jsonify({'error': 'Payment not found'}), 404
-        
-        payment.status = status
-        if amount:
-            payment.amount = int(float(amount) * 100)
-        payment.currency = currency.lower()
-        
-        if status.lower() in ['completed', 'success', 'paid']:
+        payment = Payment.query.filter_by(stripe_payment_id=payment_id).first()
+        if not payment and client_reference_id:
+            payment = Payment()
+            payment.user_id = int(client_reference_id)
+            payment.stripe_payment_id = payment_id
+            db.session.add(payment)
+            
+        if payment:
+            payment.status = 'completed'
+            payment.amount = amount
+            payment.currency = currency
+            
             user = User.query.get(payment.user_id)
             if user:
                 user.is_premium = True
                 user.premium_since = datetime.utcnow()
-        
-        db.session.commit()
-        
-        return jsonify({'status': 'success'})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+                
+            db.session.commit()
+
+    return jsonify({'status': 'success'})
 
 @app.route('/api/payments/history', methods=['GET'])
 @token_required
@@ -386,7 +424,7 @@ def get_usage(current_user):
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8000))
+    port = int(os.environ.get('PORT', 7860))
     host = os.environ.get('BIND_ADDRESS', '0.0.0.0')
     
     app.run(debug=False, host=host, port=port)

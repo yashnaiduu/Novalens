@@ -83,12 +83,47 @@ export function UploadTool() {
     [onFiles]
   );
 
+  const handleDownload = useCallback(() => {
+    if (!outputDataUrl) return;
 
+    if (outputFormat === "PNG") {
+      const a = document.createElement("a");
+      a.href = outputDataUrl;
+      a.download = "novalens-output.png";
+      a.click();
+      return;
+    }
+
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      
+      if (outputFormat === "JPG") {
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+      
+      ctx.drawImage(img, 0, 0);
+      
+      const mimeType = outputFormat === "JPG" ? "image/jpeg" : "image/webp";
+      const convertedDataUrl = canvas.toDataURL(mimeType, 0.9);
+      
+      const a = document.createElement("a");
+      a.href = convertedDataUrl;
+      a.download = `novalens-output.${outputFormat.toLowerCase()}`;
+      a.click();
+    };
+    img.src = outputDataUrl;
+  }, [outputDataUrl, outputFormat]);
 
   if (!mounted) {
     return (
       <div className="glass rounded-2xl p-6 soft-shadow">
-        <h2 className="text-2xl font-semibold tracking-tight">Background Remover</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">Novalens</h2>
         <p className="mt-2 opacity-80">Drag & drop an image or click to upload.</p>
         <p className="mt-1 text-xs opacity-70">Loading...</p>
 
@@ -143,13 +178,11 @@ export function UploadTool() {
             <p className="text-lg font-medium">Click or drag image</p>
             <p className="text-sm text-foreground/40 mt-1">PNG, JPG, WebP up to 10MB</p>
           </div>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
+          <span
             className="rounded-full bg-primary text-background px-6 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/20"
           >
             Select Image
-          </button>
+          </span>
           <input
             ref={fileInputRef}
             type="file"
@@ -161,9 +194,8 @@ export function UploadTool() {
       </label>
 
       {error && (
-        <div className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-200">
+        <div className="mt-4 rounded-lg border border-red-500/30 bg-red-50 dark:bg-red-500/10 p-3 text-sm text-red-600 dark:text-red-200 shadow-sm">
           {error}
-
         </div>
       )}
 
@@ -220,14 +252,13 @@ export function UploadTool() {
                   )}
                 </div>
                 {outputDataUrl && (
-                  <a
-                    href={outputDataUrl}
-                    download={`background-removed.${outputFormat.toLowerCase()}`}
+                  <button
+                    onClick={handleDownload}
                     className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
                   >
                     <Download className="h-3.5 w-3.5" />
                     Download
-                  </a>
+                  </button>
                 )}
               </div>
               <div
@@ -291,14 +322,13 @@ export function UploadTool() {
 
                   {/* Download Button */}
                   <div className="flex justify-center">
-                    <a
-                      href={outputDataUrl}
-                      download={`background-removed.${outputFormat.toLowerCase()}`}
+                    <button
+                      onClick={handleDownload}
                       className="inline-flex items-center gap-2 rounded-full bg-primary text-background px-8 py-3 text-sm font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30"
                     >
                       <Download className="h-4 w-4" />
                       Download {outputFormat}
-                    </a>
+                    </button>
                   </div>
                 </div>
               )}

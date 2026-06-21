@@ -6,7 +6,7 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 text-center">
 
         <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-6">
-          Ready to remove backgrounds?
+          Ready to try Novalens?
         </h2>
 
         <div className="flex justify-center gap-6 mb-8">
@@ -39,7 +39,7 @@ export function Footer() {
 
         <div className="text-sm opacity-60">
           <p>Made with ❤️ by <span className="font-semibold text-primary">Yash Naidu</span></p>
-          <p className="mt-2 text-xs">© {new Date().getFullYear()} Background Remover Pro</p>
+          <p className="mt-2 text-xs">© {new Date().getFullYear()} Novalens. All rights reserved.</p>
         </div>
 
       </div>
